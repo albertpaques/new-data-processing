@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { faSquare, faCheckSquare } from '@fortawesome/free-regular-svg-icons';
 import { Store } from '@ngrx/store';
 
+import { QueryCommandService } from '../../libs/services/query-command.service';
+
 import { AppState } from '../../libs/types';
 import { SetInSlot, SetOutSlot } from '../../libs/store/actions';
 
@@ -113,9 +115,27 @@ export class BaseQueryCommand {
 
   public dragPosition: any;
 
-  constructor(private store: Store<AppState>) {}
+  constructor(
+    private store: Store<AppState>,
+    private queryCommandService: QueryCommandService
+  ) {}
 
-  onDragEnded(e: any) {}
+  onDragEnded(e: any) {
+    const panZoomAPI = this.queryCommandService.panZoomAPI;
+
+    console.log('e.source.element', e.source.element.nativeElement);
+    const boundClientRect =
+      e.source.element.nativeElement.getBoundingClientRect();
+    console.log('boundClientRect', boundClientRect);
+    this.dragPosition = {
+      x: e.source.freeDragPosition.x + e.distance.x,
+      y: e.source.freeDragPosition.y + e.distance.y,
+    };
+    console.log(
+      'this.dragPosition',
+      panZoomAPI.getViewPosition({ x: boundClientRect.x, y: boundClientRect.y })
+    );
+  }
 
   onDragMoved(e: any) {}
 

@@ -13,7 +13,7 @@ import {
   QueryCommandItem,
   WorkspaceState,
 } from '../types';
-import { SetInSlot, SetOutSlot, UpdateTree } from './actions';
+import { AddToTree, SetInSlot, SetOutSlot, UpdateTree } from './actions';
 
 const initialState: WorkspaceState = {
   inSlot: null,
@@ -40,6 +40,26 @@ const workspaceReducer = createReducer(
     (workspaceState: WorkspaceState, prop: { slot: EndpointSlot }) => {
       const _workspaceState = { ...workspaceState };
       _workspaceState.outSlot = prop.slot;
+
+      return {
+        ...workspaceState,
+        ..._workspaceState,
+      };
+    }
+  ),
+  on(
+    AddToTree,
+    (workspaceState: WorkspaceState, prop: { item: QueryCommandItem }) => {
+      const _workspaceState = { ...workspaceState };
+      let _queryCommandTree = [..._workspaceState.queryCommandTree];
+
+      if (!_queryCommandTree) {
+        _queryCommandTree = [];
+      }
+
+      _queryCommandTree.push(prop.item);
+
+      _workspaceState.queryCommandTree = _queryCommandTree;
 
       return {
         ...workspaceState,

@@ -1,14 +1,17 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { PanZoomConfig } from 'ngx-panzoom';
+import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { PanZoomAPI, PanZoomConfig } from 'ngx-panzoom';
 import { QueryCommandItemWrapper } from '../../libs/classes/query-command-item-wrapper.class';
 import { QueryCommandItemsAnchorDirective } from '../../libs/directives/query-command-items-anchor.directive';
 import { Subject, combineLatest, skipWhile } from 'rxjs';
+
+import { QueryCommandService } from '../../libs/services/query-command.service';
 
 import { ConfigQueryCommand } from '../query-commands/config-query-command.component';
 import { SelectQueryCommand } from '../query-commands/select-query-command.component';
 import { CorrefQueryCommand } from '../query-commands/corref-query-command.component';
 
 import { AppState, QueryCommandItem } from '../../libs/types';
+import { AddToTree } from '../../libs/store/actions';
 import {
   inSlotSelector,
   outSlotSelector,
@@ -40,23 +43,24 @@ export class WorkspaceComponent implements OnInit {
     freeMouseWheel: false,
     noDragFromElementClass: 'pan-zoom-frame',
   });
+  public queryCommandTree: QueryCommandItem[] = [];
 
   private subject: Subject<QueryCommandItemWrapper> = new Subject();
-  public queryCommandItemTree: QueryCommandItem[] = [];
+  private viewContainerRef: ViewContainerRef = null;
 
   @ViewChild(QueryCommandItemsAnchorDirective, { static: true })
   queryCommandItemsAnchor!: QueryCommandItemsAnchorDirective;
 
-  constructor(private store: Store<AppState>) {}
+  constructor(
+    private store: Store<AppState>,
+    private queryCommandService: QueryCommandService
+  ) {}
 
   ngOnInit(): void {
-    const viewContainerRef = this.queryCommandItemsAnchor.viewContainerRef;
-    viewContainerRef.clear();
+    this.viewContainerRef = this.queryCommandItemsAnchor.viewContainerRef;
 
-    this.subject.subscribe((_item: QueryCommandItemWrapper) => {
-      const _containerRef = viewContainerRef.createComponent(_item.component);
-      _containerRef.instance.id = _item.setup.id;
-      _containerRef.instance.title = _item.setup.name;
+    this.panZoomConfig.api.subscribe((api: PanZoomAPI) => {
+      this.queryCommandService.panZoomAPI = api;
     });
 
     combineLatest([
@@ -68,42 +72,67 @@ export class WorkspaceComponent implements OnInit {
       }
     });
 
+    this.subject.subscribe((_item: QueryCommandItemWrapper) => {
+      console.log('_item', _item);
+      const _containerRef = this.viewContainerRef.createComponent(
+        _item.component
+      );
+      _containerRef.instance.id = _item.setup.id;
+      _containerRef.instance.title = _item.setup.name;
+    });
+
     this.store
       .select(queryCommandTreeSelector)
       .subscribe((queryCommandTree: QueryCommandItem[]) => {
-        if (queryCommandTree && queryCommandTree.length > 0) {
-          for (let item of queryCommandTree) {
-            switch (item.cmdType) {
-              case 'config':
-                this.subject.next(
-                  new QueryCommandItemWrapper(ConfigQueryCommand, {
-                    id: `config_${new Date().getTime()}`,
-                    name: 'CONFIG',
-                  })
-                );
-                this;
-                break;
-              case 'select':
-                this.subject.next(
-                  new QueryCommandItemWrapper(SelectQueryCommand, {
-                    id: `select_${new Date().getTime()}`,
-                    name: 'SELECT',
-                  })
-                );
-                break;
-              case 'corref':
-                this.subject.next(
-                  new QueryCommandItemWrapper(CorrefQueryCommand, {
-                    id: `corref_${new Date().getTime()}`,
-                    name: 'CORREF',
-                  })
-                );
-                break;
-            }
-          }
-        }
+        console.log('queryCommandTree', queryCommandTree);
+        this._queryCommandItemFactory(queryCommandTree);
       });
   }
 
-  addCmd(cmd: string) {}
+  _queryCommandItemFactory(queryCommandTree: QueryCommandItem[]) {
+    if (queryCommandTree && queryCommandTree.length > 0) {
+      this.viewContainerRef.clear();
+
+      for (let item of queryCommandTree) {
+        switch (item.cmdType) {
+          case 'config':
+            this.subject.next(
+              new QueryCommandItemWrapper(ConfigQueryCommand, {
+                id: `config_${new Date().getTime()}`,
+                name: 'CONFIG',
+              })
+            );
+            this;
+            break;
+          case 'select':
+            this.subject.next(
+              new QueryCommandItemWrapper(SelectQueryCommand, {
+                id: `select_${new Date().getTime()}`,
+                name: 'SELECT',
+              })
+            );
+            break;
+          case 'corref':
+            this.subject.next(
+              new QueryCommandItemWrapper(CorrefQueryCommand, {
+                id: `corref_${new Date().getTime()}`,
+                name: 'CORREF',
+              })
+            );
+            break;
+        }
+      }
+    }
+  }
+
+  addCmd(cmd: string) {
+    this.store.dispatch(
+      AddToTree({
+        item: {
+          id: `${cmd}_${new Date().getTime()}`,
+          cmdType: cmd,
+        },
+      })
+    );
+  }
 }

@@ -5,6 +5,16 @@ import { QueryCommandItemWrapper } from '../classes/query-command-item-wrapper.c
 
 @Injectable()
 export class QueryCommandService {
+  private _panZoomAPI: any;
+
+  set panZoomAPI(value: any) {
+    this._panZoomAPI = value;
+  }
+
+  get panZoomAPI() {
+    return this._panZoomAPI;
+  }
+
   getItems() {
     return [
       new QueryCommandItemWrapper(ConfigQueryCommand, {

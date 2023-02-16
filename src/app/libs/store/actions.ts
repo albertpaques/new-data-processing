@@ -11,6 +11,11 @@ export const SetOutSlot = createAction(
   props<{ slot: EndpointSlot }>()
 );
 
+export const AddToTree = createAction(
+  'AddToTree',
+  props<{ item: QueryCommandItem }>()
+);
+
 export const UpdateTree = createAction(
   'UpdateTree',
   props<{
