@@ -1,0 +1,17 @@
+<div class="boundary">
+  <h3>Workspace</h3>
+  <div class="toolbar">
+    <button (click)="addCmd('config')">Config</button>
+    <button (click)="addCmd('select')">Select</button>
+    <button (click)="addCmd('corref')">Correlate Ref</button>
+  </div>
+  <pan-zoom [config]="panZoomConfig">
+    <div
+      id="mydiv"
+      style="position: relative; transform-origin: 0 0"
+      [style.transform]="'scale(' + scaleValue + ')'"
+    >
+      <ng-template queryCommandItemsAnchor></ng-template>
+    </div>
+  </pan-zoom>
+</div>

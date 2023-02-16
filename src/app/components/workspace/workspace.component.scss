@@ -1,0 +1,17 @@
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 20px 0 20px 0;
+
+  button {
+    font-weight: bold;
+    padding: 20px;
+  }
+}
+pan-zoom {
+  display: block;
+  width: 100%;
+  border: 1px solid #000000;
+  height: 80vh;
+}
