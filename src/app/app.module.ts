@@ -11,6 +11,8 @@ import { QueryCommandItemsAnchorDirective } from './libs/directives/query-comman
 
 import { AppComponent } from './app.component';
 
+import { QueryCommandService } from './libs/services/query-command.service';
+
 import { BaseQueryCommand } from './components/query-commands/base-query-command.component';
 import { ConfigQueryCommand } from './components/query-commands/config-query-command.component';
 import { CorrefQueryCommand } from './components/query-commands/corref-query-command.component';
@@ -37,7 +39,7 @@ import { metaReducers, reducers } from './libs/store/reducer';
     SelectQueryCommand,
     WorkspaceComponent,
   ],
-  providers: [],
+  providers: [QueryCommandService],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

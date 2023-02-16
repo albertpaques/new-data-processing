@@ -122,15 +122,13 @@ export class BaseQueryCommand {
 
   onDragEnded(e: any) {
     const panZoomAPI = this.queryCommandService.panZoomAPI;
+    console.log('panZoomAPI', panZoomAPI);
 
-    console.log('e.source.element', e.source.element.nativeElement);
     const boundClientRect =
       e.source.element.nativeElement.getBoundingClientRect();
+
     console.log('boundClientRect', boundClientRect);
-    this.dragPosition = {
-      x: e.source.freeDragPosition.x + e.distance.x,
-      y: e.source.freeDragPosition.y + e.distance.y,
-    };
+
     console.log(
       'this.dragPosition',
       panZoomAPI.getViewPosition({ x: boundClientRect.x, y: boundClientRect.y })

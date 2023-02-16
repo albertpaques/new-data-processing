@@ -60,6 +60,7 @@ export class WorkspaceComponent implements OnInit {
     this.viewContainerRef = this.queryCommandItemsAnchor.viewContainerRef;
 
     this.panZoomConfig.api.subscribe((api: PanZoomAPI) => {
+      console.log('api', api);
       this.queryCommandService.panZoomAPI = api;
     });
 
