@@ -27,7 +27,11 @@ const workspaceReducer = createReducer(
     SetInSlot,
     (workspaceState: WorkspaceState, prop: { slot: EndpointSlot }) => {
       const _workspaceState = { ...workspaceState };
-      _workspaceState.inSlot = prop.slot;
+      _workspaceState.inSlot = null;
+      console.log('prop.slot', prop.slot);
+      if (prop.slot) {
+        _workspaceState.inSlot = prop.slot;
+      }
 
       return {
         ...workspaceState,
@@ -39,7 +43,11 @@ const workspaceReducer = createReducer(
     SetOutSlot,
     (workspaceState: WorkspaceState, prop: { slot: EndpointSlot }) => {
       const _workspaceState = { ...workspaceState };
-      _workspaceState.outSlot = prop.slot;
+      _workspaceState.outSlot = null;
+      console.log('prop.slot', prop.slot);
+      if (prop.slot) {
+        _workspaceState.outSlot = prop.slot;
+      }
 
       return {
         ...workspaceState,
@@ -85,8 +93,21 @@ const workspaceReducer = createReducer(
       const _workspaceState = { ...workspaceState };
       const { queryCommandTree } = _workspaceState;
 
-      if (queryCommandTree && queryCommandTree.length === 0) {
+      if (queryCommandTree) {
+        const inQueryCommand = queryCommandTree.filter(
+          (_item) => _item.id === prop.inObj.slot.itemName
+        );
+        const outQueryCommand = queryCommandTree.filter(
+          (_item) => _item.id === prop.outObj.slot.itemName
+        );
+
+        if (inQueryCommand && outQueryCommand) {
+          // what should we do with the tree?
+        }
       }
+
+      _workspaceState.inSlot = null;
+      _workspaceState.outSlot = null;
 
       return {
         ...workspaceState,

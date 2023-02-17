@@ -11,7 +11,7 @@ import { SelectQueryCommand } from '../query-commands/select-query-command.compo
 import { CorrefQueryCommand } from '../query-commands/corref-query-command.component';
 
 import { AppState, QueryCommandItem } from '../../libs/types';
-import { AddToTree } from '../../libs/store/actions';
+import { AddToTree, UpdateTree } from '../../libs/store/actions';
 import {
   inSlotSelector,
   outSlotSelector,
@@ -60,21 +60,33 @@ export class WorkspaceComponent implements OnInit {
     this.viewContainerRef = this.queryCommandItemsAnchor.viewContainerRef;
 
     this.panZoomConfig.api.subscribe((api: PanZoomAPI) => {
-      console.log('api', api);
+      // console.log('api', api);
       this.queryCommandService.panZoomAPI = api;
     });
 
     combineLatest([
-      this.store.select(inSlotSelector).pipe(skipWhile((inSlot) => !inSlot)),
-      this.store.select(outSlotSelector).pipe(skipWhile((outSlot) => !outSlot)),
+      this.store.select(inSlotSelector),
+      this.store.select(outSlotSelector),
     ]).subscribe(([inSlot, outSlot]) => {
       if (inSlot && outSlot) {
         console.log('connection exist!');
+        this.store.dispatch(
+          UpdateTree({
+            inObj: {
+              item: null,
+              slot: inSlot,
+            },
+            outObj: {
+              item: null,
+              slot: outSlot,
+            },
+          })
+        );
       }
     });
 
     this.subject.subscribe((_item: QueryCommandItemWrapper) => {
-      console.log('_item', _item);
+      // console.log('_item', _item);
       const _containerRef = this.viewContainerRef.createComponent(
         _item.component
       );
@@ -85,7 +97,7 @@ export class WorkspaceComponent implements OnInit {
     this.store
       .select(queryCommandTreeSelector)
       .subscribe((queryCommandTree: QueryCommandItem[]) => {
-        console.log('queryCommandTree', queryCommandTree);
+        // console.log('queryCommandTree', queryCommandTree);
         this._queryCommandItemFactory(queryCommandTree);
       });
   }

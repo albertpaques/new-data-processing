@@ -1,11 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { faSquare, faCheckSquare } from '@fortawesome/free-regular-svg-icons';
 import { Store } from '@ngrx/store';
 
 import { QueryCommandService } from '../../libs/services/query-command.service';
 
-import { AppState } from '../../libs/types';
+import { AppState, EndpointSlot } from '../../libs/types';
 import { SetInSlot, SetOutSlot } from '../../libs/store/actions';
+import { inSlotSelector, outSlotSelector } from '../../libs/store/selectors';
+import { combineLatest } from 'rxjs';
 
 @Component({
   selector: 'base-qry-cmd',
@@ -91,7 +93,7 @@ import { SetInSlot, SetOutSlot } from '../../libs/store/actions';
   `,
   ],
 })
-export class BaseQueryCommand {
+export class BaseQueryCommand implements OnInit {
   @Input() id: string = '';
   @Input() title: string = '';
   @Input() imageUrl: string = '';
@@ -115,19 +117,32 @@ export class BaseQueryCommand {
 
   public dragPosition: any;
 
+  private inSlot: EndpointSlot;
+  private outSlot: EndpointSlot;
+
   constructor(
     private store: Store<AppState>,
     private queryCommandService: QueryCommandService
   ) {}
 
+  ngOnInit() {
+    combineLatest([
+      this.store.select(inSlotSelector),
+      this.store.select(outSlotSelector),
+    ]).subscribe(([inSlot, outSlot]) => {
+      this.inSlot = inSlot;
+      this.outSlot = outSlot;
+    });
+  }
+
   onDragEnded(e: any) {
     const panZoomAPI = this.queryCommandService.panZoomAPI;
-    console.log('panZoomAPI', panZoomAPI);
+    // console.log('panZoomAPI', panZoomAPI);
 
     const boundClientRect =
       e.source.element.nativeElement.getBoundingClientRect();
 
-    console.log('boundClientRect', boundClientRect);
+    // console.log('boundClientRect', boundClientRect);
 
     console.log(
       'this.dragPosition',
@@ -157,25 +172,31 @@ export class BaseQueryCommand {
     }
 
     if (['in', 'multiIn'].indexOf(slotType) > -1) {
-      this.store.dispatch(
-        SetInSlot({
-          slot: {
-            itemName: this.id,
-            slotName: slotType,
-          },
-        })
-      );
+      // console.log('this.inSlot', this.inSlot);
+      if (!this.inSlot) {
+        this.store.dispatch(
+          SetInSlot({
+            slot: {
+              itemName: this.id,
+              slotName: slotType,
+            },
+          })
+        );
+      }
     }
 
     if (['out', 'branch', 'multiOut'].indexOf(slotType) > -1) {
-      this.store.dispatch(
-        SetOutSlot({
-          slot: {
-            itemName: this.id,
-            slotName: slotType,
-          },
-        })
-      );
+      // console.log('this.outSlot', this.outSlot);
+      if (!this.outSlot) {
+        this.store.dispatch(
+          SetOutSlot({
+            slot: {
+              itemName: this.id,
+              slotName: slotType,
+            },
+          })
+        );
+      }
     }
 
     this.slotOnClick.emit(slotType);
